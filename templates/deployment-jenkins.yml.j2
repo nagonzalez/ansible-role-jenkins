@@ -1,0 +1,18 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ jenkins_release_name }}
+  namespace: {{ jenkins_namespace }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: jenkins
+          volumeMounts:
+            - mountPath: /usr/local/openjdk-8/jre/lib/security/cacerts
+              subPath: cacerts
+              name: volume-cacerts
+      volumes:
+        - name: volume-cacerts
+          configMap:
+            name: configmap-cacerts

@@ -1,0 +1,68 @@
+---
+- name: set local facts
+  set_fact:
+    l_temp_cacerts_path: /tmp/cacerts_jenkins
+    l_temp_ldap_ca_path: /tmp/ldap_ca_crt
+
+- name: check if java keystore file already on disk
+  stat:
+    path: "{{ l_temp_cacerts_path }}"
+  register: l_stat_cacerts
+
+- name: copy java keystore to temp directory
+  copy:
+    src: cacerts
+    dest: "{{ l_temp_cacerts_path }}"
+  when: not l_stat_cacerts.stat.exists|bool
+
+- name: copy custom ldap CA certificate to temp directory
+  copy:
+    content: "{{ jenkins_ldap_ca_crt }}"
+    dest: "{{ l_temp_ldap_ca_path }}"
+
+- name: ensure openjdk is installed
+  package:
+    name: java-1.8.0-openjdk
+    state: present
+
+- name: import ldap server's CA cert into keystore
+  java_cert:
+    cert_path: "{{ l_temp_ldap_ca_path }}"
+    cert_alias: ldap_ca_crt
+    keystore_path: "{{ l_temp_cacerts_path }}"
+    keystore_pass: changeit
+    state: present
+
+- name: slurp up cacert file
+  slurp:
+    src: "{{ l_temp_cacerts_path }}"
+  register: l_slurp_tmp_cacerts
+
+- name: add cacerts configmap
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'configmap-cacerts.yml.j2') }}"
+
+- name: get jenkins service info
+  k8s:
+    api_version: v1
+    kind: Service
+    name: jenkins
+    namespace: "{{ jenkins_namespace }}"
+  register: l_jenkins_service
+
+- name: Set the jenkins host and port
+  set_fact:
+    l_jenkins_host: "{{ l_jenkins_service.result.spec.clusterIP }}"
+    l_jenkins_port: "{{ l_jenkins_service.result.spec.ports[0].port }}"
+
+- name: Wait for jenkins to become responsive
+  wait_for:
+    host: "{{ l_jenkins_host }}"
+    port: "{{ l_jenkins_port }}"
+    state: started
+
+- name: patch jenkins deployment
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'deployment-jenkins.yml.j2') }}"

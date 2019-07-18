@@ -1,0 +1,6 @@
+---
+jenkins_namespace: jenkins
+jenkins_release_name: jenkins
+jenkins_chart_values: {}
+jenkins_chart_version: 1.3.5
+jenkins_ldap_ca_crt: ''
