@@ -5,11 +5,11 @@
     port: "{{ l_helm_port }}"
     chart:
       name: jenkins
-      version: "{{ jenkins_chart_version }}"
+      version: "{{ helm_chart['version'] }}"
       source:
         type: repo
         location: https://kubernetes-charts.storage.googleapis.com
-    values: "{{ jenkins_chart_values }}"
+    values: "{{ helm_chart['values'] }}"
     state: present
-    name: "{{ jenkins_release_name }}"
-    namespace: "{{ jenkins_namespace }}"
+    name: "{{ helm_chart['release_name'] }}"
+    namespace: "{{ helm_chart['namespace'] }}"

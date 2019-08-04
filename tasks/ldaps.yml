@@ -17,7 +17,7 @@
 
 - name: copy custom ldap CA certificate to temp directory
   copy:
-    content: "{{ jenkins_ldap_ca_crt }}"
+    content: "{{ ldap_ca_crt }}"
     dest: "{{ l_temp_ldap_ca_path }}"
 
 - name: ensure openjdk is installed
@@ -48,7 +48,7 @@
     api_version: v1
     kind: Service
     name: jenkins
-    namespace: "{{ jenkins_namespace }}"
+    namespace: "{{ helm_chart['namespace'] }}"
   register: l_jenkins_service
 
 - name: Set the jenkins host and port

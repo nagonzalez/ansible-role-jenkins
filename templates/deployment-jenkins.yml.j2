@@ -1,8 +1,8 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{ jenkins_release_name }}
-  namespace: {{ jenkins_namespace }}
+  name: {{ helm_chart['release_name'] }}
+  namespace: {{ helm_chart['namespace'] }}
 spec:
   template:
     spec:
