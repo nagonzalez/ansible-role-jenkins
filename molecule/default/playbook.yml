@@ -5,5 +5,8 @@
   roles:
     - role: ansible-role-rke-node
     - role: ansible-role-rke
+    - role: ansible-role-helm
+    - role: ansible-role-local-path-provisioner
+    - role: ansible-role-cert-manager
     - role: ansible-role-rancher
     - role: ansible-role-jenkins

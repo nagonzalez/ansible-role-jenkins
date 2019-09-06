@@ -1,9 +1,10 @@
 ---
-# setup helm & tiller client
-- include: helm.yml
+# configue tiller connectivity if required
+- include: tiller.yml
+  when: l_helm_host is not defined or l_helm_port is not defined
 
 # install jenkins
 - include: jenkins.yml
 
-# setup ldaps
-- include: ldaps.yml
+# setup ldap
+- include: ldap.yml

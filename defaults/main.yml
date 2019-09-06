@@ -1,8 +1,14 @@
 ---
-helm_chart:
-  version: 1.5.0
+jenkins_helm_chart:
+  name: jenkins
+  version: 1.5.9
+  release: jenkins
   namespace: jenkins
-  release_name: jenkins
+  source:
+    type: repo
+    location: https://kubernetes-charts.storage.googleapis.com
+  state: present
   values: {}
+
 
 ldap_ca_crt: ''

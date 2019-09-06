@@ -1,15 +1,8 @@
 ---
-- name: Install jenkins helm chart
-  helm:
-    host: "{{ l_helm_host }}"
-    port: "{{ l_helm_port }}"
-    chart:
-      name: jenkins
-      version: "{{ helm_chart['version'] }}"
-      source:
-        type: repo
-        location: https://kubernetes-charts.storage.googleapis.com
-    values: "{{ helm_chart['values'] }}"
-    state: present
-    name: "{{ helm_chart['release_name'] }}"
-    namespace: "{{ helm_chart['namespace'] }}"
+- name: install jenkins helm chart
+  include_role:
+    name: nagonzalez.helm
+    tasks_from: charts
+  vars:
+    helm_charts:
+      - "{{ jenkins_helm_chart }}"

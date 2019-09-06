@@ -1,6 +1,8 @@
 ---
 dependency:
   name: galaxy
+  options:
+    role-file: molecule/default/requirements.yml
 driver:
   name: vagrant
   provider:
@@ -10,7 +12,7 @@ lint:
 platforms:
   - name: rancher
     box: centos/7
-    cpus: 1
+    cpus: 4
     memory: 4096
     interfaces:
       - auto_config: true
@@ -23,10 +25,79 @@ provisioner:
   inventory:
     host_vars:
       rancher:
+        # RKE VARS
         rke_nodes:
           - address: 172.28.128.3
             user: vagrant
             role: [controlplane, etcd, worker]
+
+        # JENKINS VARS
+        jenkins_helm_chart:
+          name: jenkins
+          version: 1.5.9
+          release: jenkins
+          namespace: jenkins
+          source:
+            type: repo
+            location: https://kubernetes-charts.storage.googleapis.com
+          state: present
+          values:
+            master:
+              adminUser: "admin"
+              adminPassword: "password"
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "1024Mi"
+
+              ingress:
+                enabled: true
+                # annotations:
+                #   ingress.kubernetes.io/ssl-redirect: 'true'
+                #   kubernetes.io/ingress.class: nginx
+                #   certmanager.k8s.io/acme-challenge-type: dns01
+                #   certmanager.k8s.io/acme-dns01-provider: cloudflare
+                #   certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+                hostName: jenkins.172.28.128.3.xip.io
+                tls:
+                  - secretName: jenkins-tls-prod
+                    hosts:
+                      - jenkins.172.28.128.3.xip.io
+
+            agent:
+              privileged: true
+
+              volumes:
+                - type: HostPath
+                  volumeName: docker-sock
+                  hostPath: /var/run/docker.sock
+                  mountPath: /var/run/docker.sock
+
+        ldap_ca_crt: |
+          -----BEGIN CERTIFICATE-----
+          MIIDQjCCAaqgAwIBAgIBATANBgkqhkiG9w0BAQsFADBpMR4wHAYDVQQKExVta2Nl
+          cnQgZGV2ZWxvcG1lbnQgQ0ExHzAdBgNVBAsMFm5vZS5nb256YWxlekBOR09OWjFN
+          TDExJjAkBgNVBAMMHW1rY2VydCBub2UuZ29uemFsZXpATkdPTloxTUwxMB4XDTE5
+          MDcwNzIyMDMyMFoXDTI5MDcwNDIyMDMyMFowHzEdMBsGA1UEAwwUZGMuaW50ZXJu
+          YWwubm9lZy53dGYwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAKmyQV1+EzgT
+          UnZrirJz+1M+7PJ22pxbEuKqiOvP46LuZbbaWVk1SLAVNuG+g7divlhr5J5/s/qF
+          0YMlw3dEQqOfL/1Rb8s4uL7Glkcteh9t36mBVqd75dfmfQAx6iA+a+8eSpCDmK6c
+          T7EF6nG6/fxpEuyXp8N+ucQZFoERVeDpAgMBAAGjQzBBMAsGA1UdDwQEAwIFoDAT
+          BgNVHSUEDDAKBggrBgEFBQcDATAdBgNVHQ4EFgQUTopPVvcWN6FXS6b8N7sKwhCX
+          W6EwDQYJKoZIhvcNAQELBQADggGBAH9wp0ZNrwTZzqBad4wxrFt7IhT7+N7FuNUw
+          Urv0IMHClQ+iOH6oAeC2XofhVqcGTJwiB2agChM6lS+6NNdHfbntuvcNz1U4B9Tr
+          uoY9txw5ocfUcebWc1zdI/Y2CJfI4GB3mvsDySvp3DfQYhAVt/pWTcultckRIwM9
+          R9kuXqPCNGrYwfgr2pYlVkYe0O3BCxvo2A3yUqB0qSJgzzCw/NlpkpHK4bdNzpQO
+          Z0jBEXtEWAjiYHSW8NoWuQX4oguMThjrXpKfFUWTlKzI/eVdU6qXSLytQ0LB5Vil
+          /oLPA53IxIJVs2nfjNFxyFuMSjWQWYRu3U2wmSbfwLs1HXPAet8PqTxdy8wo+dIm
+          +IlBzlDz1i1dUkhunOVM5ovaJJ1eNU2B718OlZ7ctPRlZga+fe8NISUbtLw1icYX
+          CBbRC0q8zKbDv7CkDDp5419QOkO0iPwb4PB9hoQ0SMZTZ0xkAkn0XR2chb8krOij
+          mXlWYi0iYu4QoDpSR4BDbKql+qBlyA==
+          -----END CERTIFICATE-----
+
   lint:
     name: ansible-lint
     options:

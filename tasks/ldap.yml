@@ -48,7 +48,7 @@
     api_version: v1
     kind: Service
     name: jenkins
-    namespace: "{{ helm_chart['namespace'] }}"
+    namespace: "{{ jenkins_helm_chart['namespace'] }}"
   register: l_jenkins_service
 
 - name: Set the jenkins host and port
